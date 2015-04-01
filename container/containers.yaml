@@ -1,0 +1,49 @@
+#*******************************************************************************
+# Copyright 2015 Google Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#*******************************************************************************
+
+version: v1beta2
+
+containers:
+ - name: infinite-infinispan
+   image: gcr.io/intense_pointer_860/infinite-infinispan
+   command: ["/opt/jboss/infinispan-server/bin/clustered.sh", "-c", "clustered-google.xml", "-b", "`hostname -I`", "-Djboss.default.jgroups.stack=google", "-Djgroups.google.bucket=infinispan_ping-intense-pointer-860", "-Djgroups.google.access_key=GOOG3P5XNG3JJQHXZVP7", "-Djgroups.google.secret_access_key=ztRq8OCC6WNsLhUGs/tcKTY5LxFRZ6KuRekIAEBh", "-Djgroups.tcp.external_addr=`curl http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip -H 'Metadata-Flavor: Google'`", "-Djboss.node.name=`curl http://metadata.google.internal/computeMetadata/v1/instance/hostname -H 'Metadata-Flavor: Google'`", "-Djboss.cluster.name=infinispan"]
+   env:
+     - name: JAVA_OPTS
+       value: -Xmx2g -Xms2g -XX:PermSize=256m -XX:MaxPermSize=256m -XX:+UseConcMarkSweepGC
+#   volumeMounts:
+#     - name: logs
+#       mountPath: /opt/jboss/infinispan-server/standalone/log
+   ports:
+     - name: hotrod
+       containerPort: 11222
+       hostPort: 11222
+     - name: jgroups
+       containerPort: 7600
+       hostPort: 7600
+     - name: jgroups-fd-sock
+       containerPort: 57600
+       hostPort: 57600
+volumes:
+ - name: logs
+#  - name: repository
+#    image: google/docker-registry
+#    ports:
+#      - name: registry
+#        containerPort: 5000
+#        hostPort: 5000
+#    env:
+#      - name: GCS_BUCKET
+#        value: docker_containers-intense-pointer-860

@@ -1,0 +1,18 @@
+{
+  "servers" : [ {
+    "url": "service:jmx:http-remoting-jmx://${infinispan.host}:${infinispan.port}",
+    "username": "${infinispan.jmx.username}",
+    "password": "${infinispan.jmx.password}",
+    "queries" : [ {
+      "obj": "jboss.infinispan:type=Cache,component=Statistics,name=\"${infinispan.cache.name}(dist_sync)\",*",
+      "attr": ["numberOfEntries"],
+      "outputWriters": [ {
+        "@class": "com.googlecode.jmxtrans.model.output.A8ROutputWriter",
+        "replicationControllerId": "${k8s.replicationControllerId}",
+        "podId": "${k8s.podId}",
+        "url": "${a8r.url}",
+        "metricName": "count"
+      } ]
+    } ]
+  } ]
+}

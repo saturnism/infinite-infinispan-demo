@@ -1,0 +1,13 @@
+{
+  "servers" : [ {
+    "url": "service:jmx:http-remoting-jmx://${infinispan.host}:${infinispan.port}",
+    "queries" : [ {
+      "obj": "jboss.infinispan:type=Cache,component=Statistics,name=\"namedCache(dist_sync)\",*",
+      "attr": ["numberOfEntries"],
+      "outputWriters": [ {
+        "@class": "com.googlecode.jmxtrans.model.output.GoogleCloudMonitoringWriter",
+        "metricName": "custom.cloudmonitoring.googleapis.com/infinispan/namedCache/numberOfEntries"
+      } ]
+    } ]
+  } ]
+}
