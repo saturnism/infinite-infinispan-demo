@@ -33,7 +33,7 @@ gcloud compute firewall-rules create $NETWORK_NAME-allow-internal\
 gcloud compute instances create $NETWORK_NAME-nat-gateway \
   --network $NETWORK_NAME \
   --can-ip-forward \
-  --zone us-central1-b \
+  --zone us-central1-c \
   --image debian-7 \
   --metadata-from-file startup-script=nat-gateway-startup.sh \
   --tags $NETWORK_NAME-nat \
@@ -42,6 +42,6 @@ gcloud compute instances create $NETWORK_NAME-nat-gateway \
 gcloud compute routes create $NETWORK_NAME-internet-route --network $NETWORK_NAME \
   --destination-range 0.0.0.0/0 \
   --next-hop-instance $NETWORK_NAME-nat-gateway \
-  --next-hop-instance-zone us-central1-a \
+  --next-hop-instance-zone us-central1-c \
   --tags $NETWORK_NAME-node \
   --priority 800

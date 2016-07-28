@@ -15,6 +15,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-docker build -t infinite-infinispan .
-docker tag -f infinite-infinispan gcr.io/wise-coyote-827/infinite-infinispan
-gcloud docker push gcr.io/wise-coyote-827/infinite-infinispan
+gcloud compute instance-templates create $1 --image $2 \
+  --network infinispan --tags infinispan-node --no-address \
+  --scopes https://www.googleapis.com/auth/devstorage.read_only https://www.googleapis.com/auth/logging.write https://www.googleapis.com/auth/monitoring \
+  --metadata-from-file startup-script=startup.sh shutdown-script=shutdown.sh

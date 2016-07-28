@@ -15,4 +15,5 @@
 # limitations under the License.
 #*******************************************************************************
 
-gcloud preview managed-instance-groups --zone us-central1-b create $1 --base-instance-name $2 --size 2 --template $3 --target-pool $4
+gcloud preview managed-instance-groups --zone us-central1-c create $1 --base-instance-name $2 --size 1 --template $3
+#--target-pool $4

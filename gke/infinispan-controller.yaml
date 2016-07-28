@@ -15,48 +15,50 @@
 #*******************************************************************************
 
 kind: ReplicationController
-apiVersion: v1beta1
-id: infinispan-controller
-desiredState:
+apiVersion: v1
+metadata:
+  name: infinispan-controller
   labels:
-    name: infinispan-controller
-  replicas: 1
-  replicaSelector:
+    name: infinispan
+    visualize: "true"
+spec:
+  replicas: 2
+  selector:
     name: infinispan-pod
-  podTemplate:
-    labels:
-      name: infinispan-pod
-    desiredState:
-      manifest:
-        version: v1beta1
-        id: infinispan
-        labels:
-          name: infinispan
-        containers:
-         - name: infinispan
-           image: gcr.io/intense_pointer_860/infinite-infinispan
-           imagePullPolicy: PullAlways
-           command: ["/opt/jboss/infinispan-server/bin/clustered.sh",
-             "-c", "clustered-google.xml",
-             "-b", "`hostname -I`",
-             "-bmanagement", "`hostname -I`",
-             "-Djboss.default.jgroups.stack=k8s",
-             "-Dkubeping.labels=infinispan-pod",
-             "-Djgroups.tcp.external_addr=`hostname -I`",
-             "-Djboss.node.name=`hostname`",
-             "-Djboss.cluster.name=infinispan" ]
-           env:
-            - name: JAVA_OPTS
-              value: -Xmx2g -Xms2g -XX:PermSize=256m -XX:MaxPermSize=256m -XX:+UseConcMarkSweepGC
-           cpu: 1000
-           ports:
-            - name: jgroups
-              containerPort: 7600
-            - name: jgroups-fd
-              containerPort: 57600
-            - name: hotrod
-              containerPort: 11222
-            - name: management-http
-              containerPort: 9990
-            - name: ping
-              containerPort: 8888
+  template:
+    metadata:
+      labels:
+        name: infinispan-pod
+        visualize: "true"
+    spec:
+      containers:
+       - name: infinispan
+         image: gcr.io/intense_pointer_860/infinite-infinispan
+         imagePullPolicy: Always
+         command: ["/opt/jboss/infinispan-server/bin/clustered.sh",
+           "-c", "clustered-google.xml",
+           "-b", "`hostname -I`",
+           "-bmanagement", "`hostname -I`",
+           "-Djboss.default.jgroups.stack=k8s",
+           "-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2",
+           "-Dkubeping.labels=infinispan",
+           "-Djgroups.tcp.external_addr=`hostname -I`",
+           "-Djboss.node.name=`hostname`",
+           "-Djboss.cluster.name=infinispan" ]
+         env:
+          - name: JAVA_OPTS
+            value: -Xmx1g -Xms1g -XX:PermSize=256m -XX:MaxPermSize=256m -XX:+UseConcMarkSweepGC
+         resources:
+           cpu: 1.0
+           memory: "1Gi"
+         ports:
+          - name: jgroups
+            containerPort: 7600
+          - name: jgroups-fd
+            containerPort: 57600
+          - name: hotrod
+            containerPort: 11222
+          - name: management-http
+            containerPort: 9990
+          - name: ping
+            containerPort: 8888

@@ -15,6 +15,12 @@
 # limitations under the License.
 #*******************************************************************************
 
-docker build -t infinite-infinispan .
-docker tag -f infinite-infinispan gcr.io/wise-coyote-827/infinite-infinispan
-gcloud docker push gcr.io/wise-coyote-827/infinite-infinispan
+gcloud preview autoscaler --zone us-central1-c \
+  create $1 \
+  --cool-down-period 30 \
+  --custom-metric custom.cloudmonitoring.googleapis.com/infinispan/namedCache/numberOfEntries \
+  --custom-metric-utilization-target-type GAUGE \
+  --min-num-replicas 1 \
+  --max-num-replicas 10 \
+  --target-custom-metric-utilization 1000 \
+  --target $2

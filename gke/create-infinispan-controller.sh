@@ -15,4 +15,4 @@
 # limitations under the License.
 #*******************************************************************************
 
-gcloud preview container replicationcontrollers create --cluster $1 --config-file infinispan-controller.yaml
+kubectl create -f infinispan-controller-a8r.yaml

@@ -15,52 +15,65 @@
 #*******************************************************************************
 
 kind: ReplicationController
-apiVersion: v1beta1
-id: infinispan-controller
-desiredState:
+apiVersion: v1
+metadata:
+  name: infinispan-controller
   labels:
-    name: infinispan-controller
-  replicas: 1
-  replicaSelector:
-    name: infinispan-pod
-  podTemplate:
-    labels:
-      name: infinispan-pod
-    desiredState:
-      manifest:
-        version: v1beta1
-        id: infinispan
-        labels:
-          name: infinispan
-        containers:
-         - name: infinispan
-           image: gcr.io/intense_pointer_860/infinite-infinispan
-           imagePullPolicy: PullAlways
-           command: ["/opt/jboss/infinispan-server/bin/clustered.sh",
-             "-c", "clustered-google.xml",
-             "-b", "`hostname -I`",
-             "-bmanagement=`hostname -I`",
-             "-Djboss.default.jgroups.stack=k8s",
-             "-Dkubeping.labels=infinispan-pod",
-             "-Djgroups.tcp.external_addr=`hostname -I`",
-             "-Djboss.node.name=`hostname`",
-             "-Djboss.cluster.name=infinispan" ]
-           env:
-            - name: JAVA_OPTS
-              value: -Xmx2g -Xms2g -XX:PermSize=256m -XX:MaxPermSize=256m -XX:+UseConcMarkSweepGC
-           cpu: 1000
-           ports:
-            - name: jgroups
-              containerPort: 7600
-            - name: jgroups-fd
-              containerPort: 57600
-            - name: hotrod
-              containerPort: 11222
-            - name: management-http
-              containerPort: 9990
-            - name: ping
-              containerPort: 8888
-         - name: jmxtrans-infinispan
-           image: gcr.io/intense_pointer_860/jmxtrans-a8r-infinispan
-           imagePullPolicy: PullAlways
-           command: ["/bin/sh", "-c", "java -cp jboss-client.jar:jmxtrans-247-SNAPSHOT-all.jar -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true -Dinfinispan.host=${HOSTNAME} -Dinfinispan.port=9990 -Dinfinispan.jmx.username=jmx -Dinfinispan.jmx.password=jmx -Dinfinispan.cache.name=default -Dk8s.replicationControllerId=infinispan-controller -Dk8s.podId=${HOSTNAME} -Da8r.url=http://${A8R_SERVICE_HOST}:${A8R_SERVICE_PORT}/a8r/metrics -Djmxtrans.log.dir=/app/ com.googlecode.jmxtrans.JmxTransformer -f infinispan.json -s 10"]
+    name: infinispan
+spec:
+  replicas: 0
+  selector:
+    name: infinispan
+  template:
+    metadata:
+      labels:
+        name: infinispan
+    spec:
+      containers:
+       - name: infinispan
+         image: gcr.io/wise-coyote-827/infinite-infinispan:v1
+         #image: gcr.io/wise-coyote-827/infinite-infinispan:latest
+         command: ["/opt/jboss/infinispan-server/bin/clustered.sh",
+           "-c", "clustered-google.xml",
+           "-b", "`hostname -I`",
+           "-bmanagement=`hostname -I`",
+           "-Djboss.default.jgroups.stack=k8s",
+           "-Dkubeping.labels=infinispan",
+           "-Djgroups.tcp.external_addr=`hostname -I`",
+           "-Djboss.node.name=`hostname`",
+           "-Djboss.cluster.name=infinispan" ]
+         env:
+          - name: JAVA_OPTS
+            value: -Xmx512m -Xms512m -XX:PermSize=256m -XX:MaxPermSize=256m -XX:+UseConcMarkSweepGC
+          - name: KUBERNETES_TOKEN_FILE
+            value: /var/run/secrets/kubernetes.io/serviceaccount/token
+          - name: KUBERNETES_CA_CERT_FILE
+            value: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+         resources:
+           cpu: 1.0
+           memory: "512Mi"
+         ports:
+          - name: jgroups
+            containerPort: 7600
+          - name: jgroups-fd
+            containerPort: 57600
+          - name: hotrod
+            containerPort: 11222
+          - name: management-http
+            containerPort: 9990
+          - name: ping
+            containerPort: 8888
+         livenessProbe:
+           tcpSocket:
+             port: 8888
+           initialDelaySeconds: 60
+           timeoutSeconds: 1
+         readinessProbe:
+           tcpSocket:
+             port: 8888
+           initialDelaySeconds: 5
+           timeoutSeconds: 1
+       - name: jmxtrans
+         #image: gcr.io/wise-coyote-827/jmxtrans-a8r-infinispan:latest
+         image: gcr.io/wise-coyote-827/jmxtrans-a8r-infinispan:v1
+         command: ["/bin/sh", "-c", "java -cp jboss-client.jar:jmxtrans-247-SNAPSHOT-all.jar -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true -Dinfinispan.host=${HOSTNAME} -Dinfinispan.port=9990 -Dinfinispan.jmx.username=jmx -Dinfinispan.jmx.password=jmx -Dinfinispan.cache.name=default -Dk8s.replicationControllerId=infinispan-controller -Dk8s.podId=${HOSTNAME} -Da8r.url=http://${A8R_SERVICE_HOST}:${A8R_SERVICE_PORT}/a8r/metrics -Djmxtrans.log.dir=/app/ com.googlecode.jmxtrans.JmxTransformer -f infinispan.json -s 10"]

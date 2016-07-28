@@ -18,4 +18,4 @@
 gcloud compute config-ssh
 eval `ssh-agent`
 ssh-add ~/.ssh/google_compute_engine
-gcloud compute ssh --ssh-flag="-A" $1
+gcloud compute ssh --ssh-flag="-A" --ssh-flag="-L 8080:localhost:8080" $1

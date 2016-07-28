@@ -69,9 +69,14 @@ if [ ! -d "${INFINISPAN_HOME}/bin" ]; then
   sed -i '/<\/interfaces>/i <interface name="jgroups"><inet-address value="${jboss.bind.address.jgroups:127.0.0.1}"\/><\/interface>' ${INFINISPAN_HOME}/standalone/configuration/clustered.xml
   sed -i 's,<socket-binding name="jgroups-tcp",<socket-binding name="jgroups-tcp" interface="jgroups",' ${INFINISPAN_HOME}/standalone/configuration/clustered.xml
   sed -i 's,<socket-binding name="jgroups-tcp-fd",<socket-binding name="jgroups-tcp-fd" interface="jgroups",' ${INFINISPAN_HOME}/standalone/configuration/clustered.xml
+  sed -i 's,<distributed-cache name="namedCache" mode="SYNC" start="EAGER"/>,<distributed-cache name="namedCache" mode="SYNC" start="EAGER"><state-transfer await-initial-transfer="false"/></distributed-cache>,' ${INFINISPAN_HOME}/standalone/configuration/clustered.xml
 
   # Update permission
   chown -R ${INFINISPAN_USER}:${INFINISPAN_USER} ${INFINISPAN_HOME}
+
+  export JMX_USERNAME=jmx
+  export JMX_PASSWORD=jmx
+  ${INFINISPAN_HOME}/bin/add-user.sh -u ${JMX_USERNAME} -p ${JMX_PASSWORD} -s
 fi
 
 export JMXTRANS_HOME=/opt/jmxtrans
@@ -87,13 +92,14 @@ start-stop-daemon --start --quiet --chuid ${INFINISPAN_USER} --group ${INFINISPA
   --background --make-pidfile --pidfile /var/run/infinispan.pid \
   --exec ${INFINISPAN_HOME}/bin/clustered.sh -- \
   -c clustered.xml \
+  -b `hostname -I` \
+  -bmanagement=0.0.0.0 \
+  -Djboss.node.name=`hostname` \
   -Djboss.default.jgroups.stack=google \
   -Djgroups.google.bucket=${GOOGLE_PING_BUCKET} \
   -Djgroups.google.access_key=${GOOGLE_PING_ACCESS} \
   -Djgroups.google.secret_access_key=${GOOGLE_PING_SECRET} \
   -Dcom.sun.management.jmxremote.authenticate=false \
-  -Djboss.bind.address=0.0.0.0 \
-  -Djboss.bind.address.management=0.0.0.0 \
   -Djboss.bind.address.jgroups=`hostname --ip-address` \
   -Djboss.cluster.name=infinispan
 
