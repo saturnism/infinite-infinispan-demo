@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: infinispan-visualizer
+  name: infinispan-visualizer
+spec:
+  ports:
+  - nodePort: 31792
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    run: infinispan-visualizer
+  sessionAffinity: None
+  type: LoadBalancer

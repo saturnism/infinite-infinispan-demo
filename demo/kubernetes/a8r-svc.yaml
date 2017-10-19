@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: a8r
+  name: a8r
+spec:
+  ports:
+  - nodePort: 31631
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    name: a8r
+  sessionAffinity: None
+  type: LoadBalancer

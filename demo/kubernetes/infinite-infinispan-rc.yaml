@@ -38,15 +38,9 @@ items:
           - name: KUBERNETES_CA_CERT_FILE
             value: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
           image: saturnism/infinite-infinispan:v1
-          imagePullPolicy: IfNotPresent
           livenessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            successThreshold: 1
             tcpSocket:
               port: 8888
-            timeoutSeconds: 1
           name: infinispan
           ports:
           - containerPort: 7600
@@ -65,16 +59,8 @@ items:
             name: ping
             protocol: TCP
           readinessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            successThreshold: 1
             tcpSocket:
               port: 8888
-            timeoutSeconds: 1
-          resources: {}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
         - command:
           - /bin/sh
           - -c
@@ -85,15 +71,7 @@ items:
             -Da8r.url=http://${A8R_SERVICE_HOST}:${A8R_SERVICE_PORT}/a8r/metrics -Djmxtrans.log.dir=/app/
             com.googlecode.jmxtrans.JmxTransformer -f infinispan.json -s 10
           image: saturnism/jmxtrans-a8r-infinispan:v1
-          imagePullPolicy: IfNotPresent
           name: jmxtrans
-          resources: {}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-        dnsPolicy: ClusterFirst
-        restartPolicy: Always
-        schedulerName: default-scheduler
-        securityContext: {}
         terminationGracePeriodSeconds: 30
 - apiVersion: v1
   kind: ReplicationController
@@ -112,16 +90,7 @@ items:
       spec:
         containers:
         - image: saturnism/infinispan-visualizer:v1
-          imagePullPolicy: IfNotPresent
           name: infinispan-visualizer
-          resources: {}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-        dnsPolicy: ClusterFirst
-        restartPolicy: Always
-        schedulerName: default-scheduler
-        securityContext: {}
-        terminationGracePeriodSeconds: 30
 - apiVersion: v1
   kind: ReplicationController
   metadata:
@@ -139,16 +108,7 @@ items:
       spec:
         containers:
         - image: saturnism/hotrod-demo:v1
-          imagePullPolicy: IfNotPresent
           name: demo
-          resources: {}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-        dnsPolicy: ClusterFirst
-        restartPolicy: Always
-        schedulerName: default-scheduler
-        securityContext: {}
-        terminationGracePeriodSeconds: 30
 - apiVersion: v1
   kind: ReplicationController
   metadata:
@@ -171,17 +131,8 @@ items:
           - name: KUBERNETES_CA_CERT_FILE
             value: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
           image: saturnism/a8r:v1
-          imagePullPolicy: IfNotPresent
           name: a8r
           ports:
           - containerPort: 8080
             name: api
             protocol: TCP
-          resources: {}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-        dnsPolicy: ClusterFirst
-        restartPolicy: Always
-        schedulerName: default-scheduler
-        securityContext: {}
-        terminationGracePeriodSeconds: 30
